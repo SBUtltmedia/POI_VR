@@ -48,9 +48,14 @@ export class PlaceOpacityBehavior implements Behavior<GUIElement> {
             let hit = this.scene.pickWithRay(ray);
             
             if (hit?.pickedMesh === this.guiElement.POI_mesh) {
-                console.log("Mesh found!");
+                // console.log("Mesh found!", this.guiElement.name);
                 let rayHelper = new RayHelper(ray);
-                rayHelper.show(this.scene, new Color3(0, 0, 0));             
+                rayHelper.show(this.scene, new Color3(0, 0, 0));
+                GUIElement.elementsSet.add(this.guiElement.name);
+                this.guiElement.rect.background = "green";
+            } else {
+                GUIElement.elementsSet.delete(this.guiElement.name);
+                this.guiElement.rect.background = "blue";
             }
         }
     }

@@ -9,6 +9,8 @@ export class GUIElement extends AbstractMesh {
     scene: Scene;
     rect: Rectangle;
     POI_mesh: AbstractMesh;
+    
+    static elementsSet: Set<string> = new Set<string>();
 
     static pointerStart: Vector2 = Vector2.Zero();
     static dragged: Rectangle | null;
@@ -84,5 +86,16 @@ export class GUIElement extends AbstractMesh {
                 GUIElement.pointerStart.y = scene.pointerY;
             }
         })            
+    }
+
+    static checkCompletion(scene: Scene, totalElements: number) {
+        let win = true;
+        let winObserver = scene.onBeforeRenderObservable.add(() => {
+            if (GUIElement.elementsSet.size === totalElements) {
+                console.log("Finished Objective");
+                alert("Finished objective");
+                winObserver.remove();
+            }
+        })
     }
 }

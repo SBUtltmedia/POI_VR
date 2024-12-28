@@ -71,6 +71,7 @@ export const createSceneAsync = async(engine: Engine, canvas: HTMLCanvasElement)
     }
 
     GUIElement.setupMovement(scene, canvas);
+    GUIElement.checkCompletion(scene, guiElements.length);
 
     import("@babylonjs/inspector").then(({ Inspector }) => {
         Inspector.Hide();

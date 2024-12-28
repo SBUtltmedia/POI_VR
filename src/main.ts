@@ -1,8 +1,17 @@
-import { AppOne as App } from './AppOne';
+import { Engine } from "@babylonjs/core/Engines/engine";
+import { createSceneAsync } from "./scene";
 
-console.log(`main.ts starting ${App.name}`);
-window.addEventListener('DOMContentLoaded', () => {
-    let canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;
-    let app = new App(canvas);
-    app.run();
+function setUpEngine(engine: Engine): void {
+    window.addEventListener("resize", function () {
+        engine.resize();
+    });
+}
+
+const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+
+const engine = new Engine(canvas, true, { stencil: true });
+
+setUpEngine(engine);
+createSceneAsync(engine, canvas).then(scene => {
+    engine.runRenderLoop(() => scene.render());
 });

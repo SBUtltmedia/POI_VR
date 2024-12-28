@@ -1,7 +1,7 @@
+import { AbstractMesh, Vector2 } from "@babylonjs/core";
 import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
 import { Scene } from "@babylonjs/core/scene";
 import { AdvancedDynamicTexture, Control, Rectangle, TextBlock } from "@babylonjs/gui";
-import { AbstractMesh, Vector2 } from "babylonjs";
 
 export class GUIElement extends AbstractMesh {
     hintText: string;
@@ -26,7 +26,7 @@ export class GUIElement extends AbstractMesh {
     }
 
     createRectangle(text: string) {
-        this.rect = new Rectangle();
+        this.rect = new Rectangle("rect");
         this.rect.width = "200px";
         this.rect.height = "40px";
         this.rect.cornerRadius = 20;

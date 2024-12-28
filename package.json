@@ -18,7 +18,6 @@
     "@babylonjs/core": "^7.42.0",
     "@babylonjs/gui": "^7.42.0",
     "@babylonjs/inspector": "^7.42.0",
-    "@babylonjs/loaders": "^7.42.0",
-    "babylonjs": "^6.49.0"
+    "@babylonjs/loaders": "^7.42.0"
   }
 }

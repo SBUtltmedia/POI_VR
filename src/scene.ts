@@ -1,8 +1,8 @@
-import { AbstractMesh, Engine, FreeCamera, HemisphericLight, Mesh, PointerEventTypes, Scene, SceneLoader, Vector2, Vector3 } from '@babylonjs/core'
+import { AbstractMesh, BoundingBoxGizmo, Color3, Engine, FreeCamera, HemisphericLight, Mesh, PointerDragBehavior, PointerEventTypes, RotationGizmo, ScaleGizmo, Scene, SceneLoader, UniversalCamera, UtilityLayerRenderer, Vector2, Vector3 } from '@babylonjs/core'
 import { AdvancedDynamicTexture, Control, Rectangle, TextBlock } from '@babylonjs/gui';
 import "@babylonjs/loaders/glTF";
-import { UniversalCamera } from 'babylonjs';
 import { GUIElement } from './GUIElement';
+import { PlaceOpacityBehavior } from './PlaceOpacityBheavior';
 
 export const createSceneAsync = async(engine: Engine, canvas: HTMLCanvasElement) => {
     var scene = new Scene(engine);
@@ -18,6 +18,41 @@ export const createSceneAsync = async(engine: Engine, canvas: HTMLCanvasElement)
             POIs = mesh.meshes.filter(childMesh => childMesh.name.includes("POI"))
             POInames = POIs.map(poi => poi.name);
             rootMesh.rotation = Vector3.Zero();
+
+            var utilLayer = new UtilityLayerRenderer(scene);
+
+            let boundingBoxGizmo = new BoundingBoxGizmo(new Color3(1, 1, 1), utilLayer)
+
+            boundingBoxGizmo.attachedMesh = rootMesh;
+
+            boundingBoxGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+            boundingBoxGizmo.updateGizmoPositionToMatchAttachedMesh = true;
+
+            rootMesh.isPickable = true;
+
+            let rotating = false;
+            const rightDir = new Vector3();
+            const upDir = new Vector3();
+            const sensitivity = 0.005;
+            scene.onPointerObservable.add((pointerInfo) => {
+                if (pointerInfo.type === 1) {
+                    if (rootMesh.getChildMeshes().includes(pointerInfo.pickInfo.pickedMesh)) {
+                        rotating = true;
+                        boundingBoxGizmo.attachedMesh = !boundingBoxGizmo.attachedMesh ? rootMesh : null
+                        camera.detachControl();
+                    }
+                } else if (pointerInfo.type === 2 && rotating) {
+                    rotating = false;
+                    camera.attachControl();
+                } else if (pointerInfo.type === 4 && rotating) {
+                    const matrix = camera.getWorldMatrix();
+                    rightDir.copyFromFloats(matrix.m[0], matrix.m[1], matrix.m[2]);
+                    upDir.copyFromFloats(matrix.m[4], matrix.m[5], matrix.m[6]);
+        
+                    rootMesh.rotateAround(rootMesh.position, rightDir, pointerInfo.event.movementY * -1 * sensitivity);
+                    rootMesh.rotateAround(rootMesh.position, upDir, pointerInfo.event.movementX * -1 * sensitivity);
+                }
+            });                   
         }
     );
 
@@ -31,6 +66,8 @@ export const createSceneAsync = async(engine: Engine, canvas: HTMLCanvasElement)
     for (let POI of POIs) {
         let guiElement = new GUIElement(scene, POI, POI.name.split("_")[1]);
         guiElements.push(guiElement);
+        const placeOpacityBehavior = new PlaceOpacityBehavior();
+        guiElement.addBehavior(placeOpacityBehavior);
     }
 
     GUIElement.setupMovement(scene, canvas);
@@ -38,7 +75,7 @@ export const createSceneAsync = async(engine: Engine, canvas: HTMLCanvasElement)
     import("@babylonjs/inspector").then(({ Inspector }) => {
         Inspector.Hide();
         window.addEventListener("keydown", (ev) => {
-            // Shift+Ctrl+Alt+I
+            // Shift+Ctrl+Alt
             if (ev.shiftKey && ev.ctrlKey && ev.altKey) {
                 console.log("inspector hit")
                 if (Inspector.IsVisible) {

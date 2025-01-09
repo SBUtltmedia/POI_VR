@@ -23,12 +23,20 @@ app.post('/upload', function (req, res) {
 
   uploadPath = __dirname + '/public/models/' + sampleFile.name;
 
-  // Use the mv() method to place the file somewhere on your server
   sampleFile.mv(uploadPath, function (err) {
     if (err)
       return res.status(500).send(err);
 
-    res.send('File uploaded!');
+    const fileUrl = `/models/${sampleFile.name}`;
+    const responseHtml = `
+      <h1>File uploaded successfully!</h1>
+      <p>Click <a href="${fileUrl}" target="_blank">here</a> to view the uploaded file.</p>
+    `;
+
+    res.send(responseHtml);
   });
 });
-app.listen(port);
+
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
+});

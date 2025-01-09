@@ -1,23 +1,34 @@
 const express = require('express');
-const app = express();
+const fileUpload = require('express-fileupload');
 const port = process.env.PORT || 3000;
-const router = express.Router();
-const fs = require('fs');
+const app = express();
 
-app.use(express.static(`${__dirname}/dist`));
+// default options
+app.use(fileUpload());
 
-app.use('/', router);
-
-router.get('*', (req, res, next) => {
-  // uncomment the line below to see the file requests on the console
-
-  if (fs.existsSync(`${__dirname}` + req.url+ '.gz')){
-    res.set('Content-Encoding', 'gzip');
-    res.set('Content-Type', 'application/javascript');
-    req.url = req.url + '.gz';
+app.post('/upload', function (req, res) {
+  let sampleFile;
+  let uploadPath;
+  console.log("Req files", req)
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send('No files were uploaded.');
   }
-  res.sendFile(`${__dirname}` + req.url);
-});
 
+  // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+  sampleFile = req.files.sampleFile;
+
+  if (!sampleFile.name.endsWith('.glb')) {
+    return res.status(400).send('Only .glb files are allowed.');
+  }
+
+  uploadPath = __dirname + '/public/models/' + sampleFile.name;
+
+  // Use the mv() method to place the file somewhere on your server
+  sampleFile.mv(uploadPath, function (err) {
+    if (err)
+      return res.status(500).send(err);
+
+    res.send('File uploaded!');
+  });
+});
 app.listen(port);
-console.log('App listenning on port', port);

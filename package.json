@@ -18,6 +18,8 @@
     "@babylonjs/core": "^7.42.0",
     "@babylonjs/gui": "^7.42.0",
     "@babylonjs/inspector": "^7.42.0",
-    "@babylonjs/loaders": "^7.42.0"
+    "@babylonjs/loaders": "^7.42.0",
+    "express": "^4.21.2",
+    "express-fileupload": "^1.5.1"
   }
 }

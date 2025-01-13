@@ -3,6 +3,8 @@ import { AdvancedDynamicTexture, Control, Rectangle, TextBlock } from '@babylonj
 import "@babylonjs/loaders/glTF";
 import { GUIElement } from './GUIElement';
 import { PlaceOpacityBehavior } from './PlaceOpacityBheavior';
+import { WebXRDefaultExperience } from "@babylonjs/core/XR/webXRDefaultExperience";
+
 
 export const createSceneAsync = async (engine: Engine, canvas: HTMLCanvasElement) => {
     const scene = new Scene(engine);
@@ -51,7 +53,6 @@ export const createSceneAsync = async (engine: Engine, canvas: HTMLCanvasElement
 
         rootMesh.isPickable = true;
 
-        // ✅ Add pointer event handling for rotating the model
         scene.onPointerObservable.add((pointerInfo) => {
             if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
                 if (rootMesh.getChildMeshes().includes(pointerInfo.pickInfo?.pickedMesh!)) {
@@ -75,6 +76,13 @@ export const createSceneAsync = async (engine: Engine, canvas: HTMLCanvasElement
     } catch (error) {
         console.error(`Failed to load model ${modelFile}:`, error);
     }
+    try {
+        const xr = await scene.createDefaultXRExperienceAsync({
+        });
+    } catch (error) {
+        console.warn("Could not create default XR experience:", error);
+    }
+
 
     return scene;
 

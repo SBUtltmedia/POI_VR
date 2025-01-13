@@ -78,9 +78,11 @@ export const createSceneAsync = async (engine: Engine, canvas: HTMLCanvasElement
     }
     try {
         const xr = await scene.createDefaultXRExperienceAsync({
+            disableDefaultUI: false,
         });
-    } catch (error) {
-        console.warn("Could not create default XR experience:", error);
+        console.log("XR is ready", xr);
+    } catch (e) {
+        console.warn("XR not supported or error occurred:", e);
     }
 
 

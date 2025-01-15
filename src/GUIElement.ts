@@ -2,6 +2,7 @@ import { AbstractMesh, Vector2 } from "@babylonjs/core";
 import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
 import { Scene } from "@babylonjs/core/scene";
 import { AdvancedDynamicTexture, Control, Rectangle, TextBlock } from "@babylonjs/gui";
+import { IMeshDataOptions } from "@babylonjs/core";
 
 export class GUIElement extends AbstractMesh {
     hintText: string;
@@ -9,7 +10,7 @@ export class GUIElement extends AbstractMesh {
     scene: Scene;
     rect: Rectangle;
     POI_mesh: AbstractMesh;
-    
+
     static elementsSet: Set<string> = new Set<string>();
 
     static pointerStart: Vector2 = Vector2.Zero();
@@ -22,9 +23,23 @@ export class GUIElement extends AbstractMesh {
         this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
         this.scene = scene;
         this.POI_mesh = POI_mesh;
+        this.rect = new Rectangle("rect");
 
         this.createRectangle(hintText);
 
+    }
+    get _positions() {
+        return null;
+    }
+
+    copyVerticesData(kind: string, vertexData: {
+        [kind: string]: Float32Array;
+    }) {
+
+    }
+
+    refreshBoundingInfo(options: IMeshDataOptions) {
+        return this;
     }
 
     createRectangle(text: string) {
@@ -64,7 +79,8 @@ export class GUIElement extends AbstractMesh {
 
     static setupMovement(scene: Scene, canvas: HTMLCanvasElement) {
         const camera = scene.activeCamera;
-        scene.onPointerObservable.add(eventData => {;
+        scene.onPointerObservable.add(eventData => {
+            ;
             if (eventData.type == PointerEventTypes.POINTERUP) {
                 if (GUIElement.dragged) {
                     GUIElement.dragged.isPointerBlocker = true;   // re-allow interaction with gui control
@@ -76,16 +92,16 @@ export class GUIElement extends AbstractMesh {
                 // calc drag position change since last triggered pointer move
                 const deltaX = scene.pointerX - GUIElement.pointerStart.x;
                 const deltaY = scene.pointerY - GUIElement.pointerStart.y;
-    
+
                 // move gui control according to user drag
                 GUIElement.dragged.topInPixels += deltaY;
                 GUIElement.dragged.leftInPixels += deltaX;
-    
+
                 // update drag start position since last triggered pointer move
                 GUIElement.pointerStart.x = scene.pointerX;
                 GUIElement.pointerStart.y = scene.pointerY;
             }
-        })            
+        })
     }
 
     static checkCompletion(scene: Scene, totalElements: number) {

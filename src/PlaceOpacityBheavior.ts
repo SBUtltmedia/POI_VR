@@ -5,15 +5,24 @@ import { Scene } from "@babylonjs/core/scene";
 import { Observer } from "@babylonjs/core/Misc/observable";
 import { Matrix, Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { Ray } from "@babylonjs/core/Culling/ray";
-import { Color3, RayHelper } from "@babylonjs/core";
+import { Color3, Engine, RayHelper } from "@babylonjs/core";
+import { Nullable } from "@babylonjs/core";
 
 export class PlaceOpacityBehavior implements Behavior<GUIElement> {
     guiElement: GUIElement;
     scene: Scene;
     raycasterObserver: Observer<Scene>;
 
+    constructor(scene: Scene, mesh: AbstractMesh) {
+        this.raycasterObserver = new Observer<Scene>(() => console.log(), 4);
+        this.scene = scene;
+        this.guiElement = new GUIElement(this.scene, mesh, "test");
+    }
+
     init(): void {
-        
+        //this.scene = new BABYLON.Scene(engine);
+
+        //this.guiElement = new GUIElement(this.scene, , "String");
     }
 
     get name() {
@@ -23,7 +32,7 @@ export class PlaceOpacityBehavior implements Behavior<GUIElement> {
     attach(target: GUIElement): void {
         this.guiElement = target;
         this.scene = target.getScene();
-        
+
         // If the target GUIElement is initialized with a POI_mesh, we use that
         if (!this.guiElement.POI_mesh) {
             console.error("POI_mesh is not defined for this GUIElement.");
@@ -46,7 +55,7 @@ export class PlaceOpacityBehavior implements Behavior<GUIElement> {
             // Get the world position of the rectangle (GUI element)
             let ray = this.scene.createPickingRay(control.centerX, control.centerY, Matrix.Identity(), null);
             let hit = this.scene.pickWithRay(ray);
-            
+
             if (hit?.pickedMesh === this.guiElement.POI_mesh) {
                 // console.log("Mesh found!", this.guiElement.name);
                 let rayHelper = new RayHelper(ray);
@@ -65,5 +74,5 @@ export class PlaceOpacityBehavior implements Behavior<GUIElement> {
         if (this.raycasterObserver) {
             this.scene.onBeforeRenderObservable.remove(this.raycasterObserver);
         }
-    }    
+    }
 }

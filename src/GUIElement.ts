@@ -9,14 +9,17 @@ export class GUIElement extends AbstractMesh {
     advancedTexture: AdvancedDynamicTexture;
     scene: Scene;
     rect: Rectangle;
+    questRect!: Rectangle;
     POI_mesh: AbstractMesh;
+    isOk: Boolean;
+    idx!: number;
 
     static elementsSet: Set<string> = new Set<string>();
 
     static pointerStart: Vector2 = Vector2.Zero();
     static dragged: Rectangle | null;
 
-    constructor(scene: Scene, POI_mesh: AbstractMesh, hintText: string) {
+    constructor(scene: Scene, POI_mesh: AbstractMesh, hintText: string, idx: number = 0) {
         super(hintText, scene);
 
         this.hintText = hintText;
@@ -24,6 +27,8 @@ export class GUIElement extends AbstractMesh {
         this.scene = scene;
         this.POI_mesh = POI_mesh;
         this.rect = new Rectangle("rect");
+        this.isOk = false;
+        this.idx = idx;
 
         this.createRectangle(hintText);
 
@@ -45,7 +50,7 @@ export class GUIElement extends AbstractMesh {
     createRectangle(text: string) {
         this.rect = new Rectangle("rect");
         this.rect.width = "200px";
-        this.rect.height = "40px";
+        this.rect.height = "50px";
         this.rect.cornerRadius = 20;
         this.rect.color = "yellow";
         this.rect.thickness = 2;
@@ -60,21 +65,66 @@ export class GUIElement extends AbstractMesh {
 
         this.rect.addControl(textBlock);
         this.rect.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+        this.rect.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
         this.advancedTexture.addControl(this.rect);
         let camera = this.scene.activeCamera;
 
+        this.questRect = new Rectangle("questRect");
+        this.questRect.width = "50px";
+        this.questRect.height = "50px"
+        this.questRect.cornerRadius = 20;
+        this.questRect.color = "yellow";
+        this.questRect.thickness = 2;
+        this.questRect.background = "blue";        
+
+        var textBlock2 = new TextBlock();
+        textBlock2.text = "?";
+        textBlock2.color = "white";
+        textBlock2.fontSize = "13px";
+        textBlock2.resizeToFit = true;
+        textBlock2.textWrapping = true;     
+        this.questRect.addControl(textBlock2);
+        this.questRect.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+        this.questRect.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+        const factor = 70;
+
+        this.rect.topInPixels = this.idx * factor;
+        this.questRect.topInPixels = this.idx * factor;
+
+        this.rect.paddingTopInPixels = 2;
+        this.questRect.paddingTopInPixels = 2;
+
+        this.advancedTexture.addControl(this.questRect);   
+
         // Pointer Down - Start of dragging
-        this.rect.onPointerDownObservable.add(evt => {
+        this.questRect.onPointerDownObservable.add(evt => {
             // Capture initial position when drag starts
 
-            this.rect.isPointerBlocker = false;
+            this.questRect.isPointerBlocker = false;
             GUIElement.pointerStart.x = this.scene.pointerX;
             GUIElement.pointerStart.y = this.scene.pointerY;
-            GUIElement.dragged = this.rect;
+            GUIElement.dragged = this.questRect;
             // Optionally, disable camera controls to prevent interference during dragging
             camera?.detachControl();
+
+            if (this.isOk) {
+                if (this.rect.background === "blue") {
+                    this.rect.background = "green";
+                    this.questRect.background = "green";
+                } else {
+                    this.rect.background = "blue";
+                    this.questRect.background = "blue";        
+                }
+            } else {
+                this.rect.background = "blue";
+                this.questRect.background = "blue";
+            }
         });
+
+        // this.questRect.onPointerUpObservable.add(evt => {
+        //     this.rect.background = "blue";
+        // })
     }
 
     static setupMovement(scene: Scene, canvas: HTMLCanvasElement) {

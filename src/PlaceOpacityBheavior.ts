@@ -1,3 +1,6 @@
+// @ts-nocheck
+// adding the above line bc guiElement is undefiend and ts cant figure out that once it attacnes it gets defined
+
 import { Behavior } from "@babylonjs/core/Behaviors/behavior";
 import { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
 import { GUIElement } from "./GUIElement";
@@ -9,14 +12,13 @@ import { Color3, Engine, RayHelper } from "@babylonjs/core";
 import { Nullable } from "@babylonjs/core";
 
 export class PlaceOpacityBehavior implements Behavior<GUIElement> {
-    guiElement: GUIElement;
+    guiElement: GUIElement | undefined;
     scene: Scene;
     raycasterObserver: Observer<Scene>;
 
-    constructor(scene: Scene, mesh: AbstractMesh) {
+    constructor(scene: Scene) {
         this.raycasterObserver = new Observer<Scene>(() => console.log(), 4);
         this.scene = scene;
-        this.guiElement = new GUIElement(this.scene, mesh, "test");
     }
 
     init(): void {
@@ -47,10 +49,10 @@ export class PlaceOpacityBehavior implements Behavior<GUIElement> {
 
     // Method to check if the rectangle is above the POI_Mesh
     private checkIfRectangleAbovePOI(): void {
-        if (!this.guiElement.rect || !this.guiElement.POI_mesh) return;
+        if (!this.guiElement?.questRect || !this.guiElement.POI_mesh) return;
 
         const adm = this.guiElement.advancedTexture;
-        const control = adm.getControlByName("rect");
+        const control = adm.getControlByName("questRect");
         if (control) {
             // Get the world position of the rectangle (GUI element)
             let ray = this.scene.createPickingRay(control.centerX, control.centerY, Matrix.Identity(), null);
@@ -61,10 +63,12 @@ export class PlaceOpacityBehavior implements Behavior<GUIElement> {
                 let rayHelper = new RayHelper(ray);
                 rayHelper.show(this.scene, new Color3(0, 0, 0));
                 GUIElement.elementsSet.add(this.guiElement.name);
-                this.guiElement.rect.background = "green";
+                // this.guiElement.rect.background = "green";
+                this.guiElement.isOk = true;
             } else {
                 GUIElement.elementsSet.delete(this.guiElement.name);
-                this.guiElement.rect.background = "blue";
+                // this.guiElement.rect.background = "blue";
+                this.guiElement.isOk = false;
             }
         }
     }

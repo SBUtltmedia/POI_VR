@@ -73,6 +73,21 @@ export const createSceneAsync = async (engine: Engine, canvas: HTMLCanvasElement
             }
         });
 
+        const POI_meshes = result.meshes.filter(mesh => mesh.name.startsWith("POI"));
+        console.log(POI_meshes);
+
+        const guiElements = [];
+        let idx = 0;
+        for (let POI_mesh of POI_meshes) {
+            let guiElement = new GUIElement(scene, POI_mesh, POI_mesh.name, idx);
+            let placeOpacityBehav = new PlaceOpacityBehavior(scene);
+            guiElement.addBehavior(placeOpacityBehav);
+            guiElements.push(guiElement);
+            idx++;
+        }
+
+        GUIElement.setupMovement(scene, canvas);
+
     } catch (error) {
         console.error(`Failed to load model ${modelFile}:`, error);
     }

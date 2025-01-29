@@ -65,10 +65,14 @@ export class PlaceOpacityBehavior implements Behavior<GUIElement> {
                 GUIElement.elementsSet.add(this.guiElement.name);
                 // this.guiElement.rect.background = "green";
                 this.guiElement.isOk = true;
+                this.guiElement.mat.diffuseColor = new Color3(0, 255, 0);
+                this.guiElement.POI_mesh.material = this.guiElement.mat;                
             } else {
                 GUIElement.elementsSet.delete(this.guiElement.name);
                 // this.guiElement.rect.background = "blue";
                 this.guiElement.isOk = false;
+                this.guiElement.mat.diffuseColor = new Color3(255, 255, 0);
+                this.guiElement.POI_mesh.material = this.guiElement.mat;                 
             }
         }
     }

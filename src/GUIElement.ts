@@ -1,4 +1,4 @@
-import { AbstractMesh, Vector2 } from "@babylonjs/core";
+import { AbstractMesh, Color3, Material, StandardMaterial, Vector2 } from "@babylonjs/core";
 import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
 import { Scene } from "@babylonjs/core/scene";
 import { AdvancedDynamicTexture, Control, Rectangle, TextBlock } from "@babylonjs/gui";
@@ -13,6 +13,7 @@ export class GUIElement extends AbstractMesh {
     POI_mesh: AbstractMesh;
     isOk: Boolean;
     idx!: number;
+    mat!: StandardMaterial;
 
     static elementsSet: Set<string> = new Set<string>();
 
@@ -31,6 +32,10 @@ export class GUIElement extends AbstractMesh {
         this.idx = idx;
 
         this.createRectangle(hintText);
+
+        this.mat = new StandardMaterial("poi-mat");
+        this.mat.diffuseColor = new Color3(255, 255, 0);
+        this.POI_mesh.material = this.mat;
 
     }
     get _positions() {
@@ -118,13 +123,14 @@ export class GUIElement extends AbstractMesh {
                 }
             } else {
                 this.rect.background = "blue";
-                this.questRect.background = "blue";
+                this.questRect.background = "blue" ;                
             }
         });
 
-        // this.questRect.onPointerUpObservable.add(evt => {
-        //     this.rect.background = "blue";
-        // })
+        this.questRect.onPointerUpObservable.add(evt => {
+            camera?.attachControl();
+            GUIElement.dragged = null;
+        })
     }
 
     static setupMovement(scene: Scene, canvas: HTMLCanvasElement) {

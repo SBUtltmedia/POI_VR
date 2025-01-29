@@ -5,6 +5,7 @@ const app = express();
 
 // default options
 app.use(fileUpload());
+app.use(express.static('dist'))
 
 app.post('/upload', function (req, res) {
   let sampleFile;
@@ -27,13 +28,7 @@ app.post('/upload', function (req, res) {
     if (err)
       return res.status(500).send(err);
 
-    const fileUrl = `/models/${sampleFile.name}`;
-    const responseHtml = `
-      <h1>File uploaded successfully!</h1>
-      <p>Click <a href="${fileUrl}" target="_blank">here</a> to view the uploaded file.</p>
-    `;
-
-    res.send(responseHtml);
+    res.redirect(`/index.html?file=${sampleFile.name}`)
   });
 });
 

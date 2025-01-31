@@ -2,7 +2,7 @@
   "name": "friends",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite --open",
+    "dev": "vite --host --open",
     "build": "node launch.js",
     "start": "concurrently \"node server.js\" \"tsc && vite build\"",
     "preview": "tsc && vite build && vite preview --host --open"
@@ -23,6 +23,8 @@
     "child_process": "^1.0.2",
     "concurrently": "^9.1.2",
     "express": "^4.21.2",
-    "express-fileupload": "^1.5.1"
+    "express-fileupload": "^1.5.1",
+    "mkcert": "^3.2.0",
+    "vite-plugin-mkcert": "^1.17.6"
   }
 }

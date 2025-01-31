@@ -16,16 +16,18 @@ export const createSceneAsync = async (engine: Engine, canvas: HTMLCanvasElement
     light.intensity = 0.7;
 
     const searchParams = new URLSearchParams(window.location.search);
-    let modelFile = searchParams.get("file");
+    let modelFile = searchParams.get("file") || "suzanne.glb";
 
     if (!modelFile) {
         console.warn("No file specified in the URL. Example: ?file=suzanne.glb");
         return scene;
     }
 
+
     if (!modelFile.endsWith(".glb")) {
         modelFile += ".glb";
     }
+
 
     try {
         const result = await SceneLoader.ImportMeshAsync("", "./models/", modelFile, scene);
@@ -91,14 +93,12 @@ export const createSceneAsync = async (engine: Engine, canvas: HTMLCanvasElement
     } catch (error) {
         console.error(`Failed to load model ${modelFile}:`, error);
     }
-    try {
-        const xr = await scene.createDefaultXRExperienceAsync({
-            disableDefaultUI: false,
-        });
-        console.log("XR is ready", xr);
-    } catch (e) {
-        console.warn("XR not supported or error occurred:", e);
-    }
+    const xrExperience = await scene.createDefaultXRExperienceAsync({
+        uiOptions: {
+            sessionMode: 'immersive-ar'
+        }
+    });
+    console.log(xrExperience);
 
 
     return scene;

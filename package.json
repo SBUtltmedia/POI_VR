@@ -16,7 +16,7 @@
     "vite": "^5.0.11"
   },
   "dependencies": {
-    "@babylonjs/core": "^7.43.0",
+    "@babylonjs/core": "^7.47.1",
     "@babylonjs/gui": "^7.43.0",
     "@babylonjs/inspector": "^7.42.0",
     "@babylonjs/loaders": "^7.43.0",

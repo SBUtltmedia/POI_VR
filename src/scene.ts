@@ -45,7 +45,7 @@ export const createSceneAsync = async (engine: Engine, canvas: HTMLCanvasElement
 
         utilLayer.utilityLayerScene.autoClearDepthAndStencil = true;
 
-        let boundingBox = BoundingBoxGizmo.MakeNotPickableAndWrapInBoundingBox(rootMesh);
+        // let boundingBox = BoundingBoxGizmo.MakeNotPickableAndWrapInBoundingBox(rootMesh as Mesh);
 
         const boundingBoxGizmo = new BoundingBoxGizmo(Color3.FromHexString("#0984e3"), utilLayer);
         // const rotateGizmo = new RotationGizmo(utilLayer);
@@ -57,43 +57,13 @@ export const createSceneAsync = async (engine: Engine, canvas: HTMLCanvasElement
             console.log(evt);
         })
         
-        boundingBoxGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+        boundingBoxGizmo.updateGizmoRotationToMatchAttachedMesh = true;
         boundingBoxGizmo.updateGizmoPositionToMatchAttachedMesh = true;
         
         let sixDofDragBehavior = new SixDofDragBehavior()
-        boundingBox.addBehavior(sixDofDragBehavior)
+        rootMesh.addBehavior(sixDofDragBehavior)
         let multiPointerScaleBehavior = new MultiPointerScaleBehavior()
-        boundingBox.addBehavior(multiPointerScaleBehavior)    
-
-        // rotateGizmo.updateGizmoPositionToMatchAttachedMesh = true;
-        // rotateGizmo.updateGizmoRotationToMatchAttachedMesh = false;
-
-        // let rotating = false;
-        // const rightDir = new Vector3();
-        // const upDir = new Vector3();
-        // const sensitivity = 0.005;
-
-        // rootMesh.isPickable = true;
-
-        // scene.onPointerObservable.add((pointerInfo) => {
-        //     if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
-        //         if (rootMesh.getChildMeshes().includes(pointerInfo.pickInfo?.pickedMesh!)) {
-        //             rotating = true;
-        //             boundingBoxGizmo.attachedMesh = !boundingBoxGizmo.attachedMesh ? rootMesh : null;
-        //             camera.detachControl();
-        //         }
-        //     } else if (pointerInfo.type === PointerEventTypes.POINTERUP && rotating) {
-        //         rotating = false;
-        //         camera.attachControl();
-        //     } else if (pointerInfo.type === PointerEventTypes.POINTERMOVE && rotating) {
-        //         const matrix = camera.getWorldMatrix();
-        //         rightDir.copyFromFloats(matrix.m[0], matrix.m[1], matrix.m[2]);
-        //         upDir.copyFromFloats(matrix.m[4], matrix.m[5], matrix.m[6]);
-
-        //         rootMesh.rotateAround(rootMesh.position, rightDir, pointerInfo.event.movementY * -1 * sensitivity);
-        //         rootMesh.rotateAround(rootMesh.position, upDir, pointerInfo.event.movementX * -1 * sensitivity);
-        //     }
-        // });
+        rootMesh.addBehavior(multiPointerScaleBehavior)    
 
         const POI_meshes = result.meshes.filter(mesh => mesh.name.startsWith("POI"));
         console.log(POI_meshes);

@@ -1,4 +1,4 @@
-import { AbstractMesh, Color3, Material, Mesh, MeshBuilder, PointerDragBehavior, StandardMaterial, Vector2, Vector3 } from "@babylonjs/core";
+import { AbstractMesh, Color3, Material, StandardMaterial, Vector2 } from "@babylonjs/core";
 import { PointerEventTypes } from "@babylonjs/core/Events/pointerEvents";
 import { Scene } from "@babylonjs/core/scene";
 import { AdvancedDynamicTexture, Control, Rectangle, TextBlock } from "@babylonjs/gui";
@@ -6,8 +6,7 @@ import { IMeshDataOptions } from "@babylonjs/core";
 
 export class GUIElement extends AbstractMesh {
     hintText: string;
-    advancedTextureHint: AdvancedDynamicTexture;
-    advancedTextureQuestion: AdvancedDynamicTexture;
+    advancedTexture: AdvancedDynamicTexture;
     scene: Scene;
     rect: Rectangle;
     questRect!: Rectangle;
@@ -15,8 +14,6 @@ export class GUIElement extends AbstractMesh {
     isOk: Boolean;
     idx!: number;
     mat!: StandardMaterial;
-    plane!: Mesh;
-    planeQuestion!: Mesh;
 
     static elementsSet: Set<string> = new Set<string>();
 
@@ -27,23 +24,7 @@ export class GUIElement extends AbstractMesh {
         super(hintText, scene);
 
         this.hintText = hintText;
-
-        this.plane = MeshBuilder.CreatePlane(`plane_${POI_mesh.name}`);
-        this.plane.position = new Vector3(10, 1, 0);
-
-        this.planeQuestion = MeshBuilder.CreatePlane(`plane_${POI_mesh.name}`);
-        this.planeQuestion.position = new Vector3(2, 1, 0);
-        
-
-        const pointerDrag = new PointerDragBehavior();
-        this.planeQuestion.addBehavior(pointerDrag);
-
-        pointerDrag.onDragObservable.add(evt => {
-            console.log("Drag");
-        })
-
-        this.advancedTextureHint = AdvancedDynamicTexture.CreateForMesh(this.plane, 200, 200);
-        this.advancedTextureQuestion = AdvancedDynamicTexture.CreateForMesh(this.planeQuestion, 200, 200);
+        this.advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
         this.scene = scene;
         this.POI_mesh = POI_mesh;
         this.rect = new Rectangle("rect");
@@ -72,27 +53,27 @@ export class GUIElement extends AbstractMesh {
     }
 
     createRectangle(text: string) {
-        // this.rect = new Rectangle("rect");
-        // this.rect.width = "200px";
-        // this.rect.height = "50px";
-        // this.rect.cornerRadius = 20;
-        // this.rect.color = "yellow";
-        // this.rect.thickness = 2;
-        // this.rect.background = "blue";
+        this.rect = new Rectangle("rect");
+        this.rect.width = "200px";
+        this.rect.height = "50px";
+        this.rect.cornerRadius = 20;
+        this.rect.color = "yellow";
+        this.rect.thickness = 2;
+        this.rect.background = "blue";
 
-        // var textBlock = new TextBlock();
-        // textBlock.text = text;
-        // textBlock.color = "white";
-        // textBlock.fontSize = "13px";
-        // textBlock.resizeToFit = true;
-        // textBlock.textWrapping = true;
+        var textBlock = new TextBlock();
+        textBlock.text = text;
+        textBlock.color = "white";
+        textBlock.fontSize = "13px";
+        textBlock.resizeToFit = true;
+        textBlock.textWrapping = true;
 
-        // this.rect.addControl(textBlock);
-        // this.rect.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
-        // this.rect.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+        this.rect.addControl(textBlock);
+        this.rect.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
+        this.rect.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
-        // this.advancedTextureHint.addControl(this.rect);
-        // let camera = this.scene.activeCamera;
+        this.advancedTexture.addControl(this.rect);
+        let camera = this.scene.activeCamera;
 
         this.questRect = new Rectangle("questRect");
         this.questRect.width = "50px";
@@ -119,37 +100,37 @@ export class GUIElement extends AbstractMesh {
         this.rect.paddingTopInPixels = 2;
         this.questRect.paddingTopInPixels = 2;
 
-        this.advancedTextureQuestion.addControl(this.questRect);   
+        this.advancedTexture.addControl(this.questRect);   
 
-        // // Pointer Down - Start of dragging
-        // this.questRect.onPointerDownObservable.add(evt => {
-        //     // Capture initial position when drag starts
+        // Pointer Down - Start of dragging
+        this.questRect.onPointerDownObservable.add(evt => {
+            // Capture initial position when drag starts
 
-        //     this.questRect.isPointerBlocker = false;
-        //     GUIElement.pointerStart.x = this.scene.pointerX;
-        //     GUIElement.pointerStart.y = this.scene.pointerY;
-        //     GUIElement.dragged = this.questRect;
-        //     // Optionally, disable camera controls to prevent interference during dragging
-        //     camera?.detachControl();
+            this.questRect.isPointerBlocker = false;
+            GUIElement.pointerStart.x = this.scene.pointerX;
+            GUIElement.pointerStart.y = this.scene.pointerY;
+            GUIElement.dragged = this.questRect;
+            // Optionally, disable camera controls to prevent interference during dragging
+            camera?.detachControl();
 
-        //     if (this.isOk) {
-        //         if (this.rect.background === "blue") {
-        //             this.rect.background = "green";
-        //             this.questRect.background = "green";
-        //         } else {
-        //             this.rect.background = "blue";
-        //             this.questRect.background = "blue";        
-        //         }
-        //     } else {
-        //         this.rect.background = "blue";
-        //         this.questRect.background = "blue" ;                
-        //     }
-        // });
+            if (this.isOk) {
+                if (this.rect.background === "blue") {
+                    this.rect.background = "green";
+                    this.questRect.background = "green";
+                } else {
+                    this.rect.background = "blue";
+                    this.questRect.background = "blue";        
+                }
+            } else {
+                this.rect.background = "blue";
+                this.questRect.background = "blue" ;                
+            }
+        });
 
-        // this.questRect.onPointerUpObservable.add(evt => {
-        //     camera?.attachControl();
-        //     GUIElement.dragged = null;
-        // })
+        this.questRect.onPointerUpObservable.add(evt => {
+            camera?.attachControl();
+            GUIElement.dragged = null;
+        })
     }
 
     static setupMovement(scene: Scene, canvas: HTMLCanvasElement) {

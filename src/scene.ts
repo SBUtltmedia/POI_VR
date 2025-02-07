@@ -1,4 +1,4 @@
-import { AbstractMesh, BoundingBoxGizmo, Color3, Engine, FreeCamera, HemisphericLight, Mesh, PointerDragBehavior, PointerEventTypes, RotationGizmo, ScaleGizmo, Scene, SceneLoader, UniversalCamera, UtilityLayerRenderer, Vector2, Vector3 } from '@babylonjs/core'
+import { AbstractMesh, BoundingBoxGizmo, Color3, Engine, FreeCamera, GizmoManager, HemisphericLight, Mesh, MultiPointerScaleBehavior, PointerDragBehavior, PointerEventTypes, RotationGizmo, ScaleGizmo, Scene, SceneLoader, SixDofDragBehavior, UniversalCamera, UtilityLayerRenderer, Vector2, Vector3 } from '@babylonjs/core'
 import { AdvancedDynamicTexture, Control, Rectangle, TextBlock } from '@babylonjs/gui';
 import "@babylonjs/loaders/glTF";
 import { GUIElement } from './GUIElement';
@@ -42,38 +42,28 @@ export const createSceneAsync = async (engine: Engine, canvas: HTMLCanvasElement
         rootMesh.name = modelFile;
 
         const utilLayer = new UtilityLayerRenderer(scene);
-        const boundingBoxGizmo = new BoundingBoxGizmo(new Color3(1, 1, 1), utilLayer);
+
+        utilLayer.utilityLayerScene.autoClearDepthAndStencil = true;
+
+        // let boundingBox = BoundingBoxGizmo.MakeNotPickableAndWrapInBoundingBox(rootMesh as Mesh);
+
+        const boundingBoxGizmo = new BoundingBoxGizmo(Color3.FromHexString("#0984e3"), utilLayer);
+        // const rotateGizmo = new RotationGizmo(utilLayer);
         boundingBoxGizmo.attachedMesh = rootMesh;
+        boundingBoxGizmo.setEnabledScaling(true, true);
+        // rotateGizmo.attachedMesh = rootMesh;
 
-        boundingBoxGizmo.updateGizmoRotationToMatchAttachedMesh = false;
+        let hoverObserver = boundingBoxGizmo.onHoverStartObservable.add((evt) => {
+            console.log(evt);
+        })
+        
+        boundingBoxGizmo.updateGizmoRotationToMatchAttachedMesh = true;
         boundingBoxGizmo.updateGizmoPositionToMatchAttachedMesh = true;
-
-        let rotating = false;
-        const rightDir = new Vector3();
-        const upDir = new Vector3();
-        const sensitivity = 0.005;
-
-        rootMesh.isPickable = true;
-
-        scene.onPointerObservable.add((pointerInfo) => {
-            if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
-                if (rootMesh.getChildMeshes().includes(pointerInfo.pickInfo?.pickedMesh!)) {
-                    rotating = true;
-                    boundingBoxGizmo.attachedMesh = !boundingBoxGizmo.attachedMesh ? rootMesh : null;
-                    camera.detachControl();
-                }
-            } else if (pointerInfo.type === PointerEventTypes.POINTERUP && rotating) {
-                rotating = false;
-                camera.attachControl();
-            } else if (pointerInfo.type === PointerEventTypes.POINTERMOVE && rotating) {
-                const matrix = camera.getWorldMatrix();
-                rightDir.copyFromFloats(matrix.m[0], matrix.m[1], matrix.m[2]);
-                upDir.copyFromFloats(matrix.m[4], matrix.m[5], matrix.m[6]);
-
-                rootMesh.rotateAround(rootMesh.position, rightDir, pointerInfo.event.movementY * -1 * sensitivity);
-                rootMesh.rotateAround(rootMesh.position, upDir, pointerInfo.event.movementX * -1 * sensitivity);
-            }
-        });
+        
+        let sixDofDragBehavior = new SixDofDragBehavior()
+        rootMesh.addBehavior(sixDofDragBehavior)
+        let multiPointerScaleBehavior = new MultiPointerScaleBehavior()
+        rootMesh.addBehavior(multiPointerScaleBehavior)    
 
         const POI_meshes = result.meshes.filter(mesh => mesh.name.startsWith("POI"));
         console.log(POI_meshes);

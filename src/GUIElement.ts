@@ -93,9 +93,14 @@ export class GUIElement extends AbstractMesh {
         this.questRect.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_RIGHT;
         this.questRect.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
         const factor = 70;
+        const topOffset = 100;
+        const leftOffset = -200;
 
-        this.rect.topInPixels = this.idx * factor;
-        this.questRect.topInPixels = this.idx * factor;
+        this.rect.topInPixels = (this.idx * factor) + topOffset;
+        this.questRect.topInPixels = (this.idx * factor) + topOffset;
+
+        this.rect.leftInPixels = leftOffset;
+        this.questRect.leftInPixels = leftOffset;
 
         this.rect.paddingTopInPixels = 2;
         this.questRect.paddingTopInPixels = 2;

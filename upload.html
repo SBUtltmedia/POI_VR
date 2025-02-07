@@ -1,11 +1,276 @@
 <html>
 
+<head>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --success-color: #50c878;
+            --error-color: #ff6b6b;
+            --background: #f8f9fa;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: var(--background);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        .upload-container {
+            width: min(90%, 500px);
+            text-align: center;
+        }
+
+        .drop-zone {
+            position: relative;
+            padding: 3rem 2rem;
+            border: 2px dashed #cbd5e0;
+            border-radius: 1.5rem;
+            background: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        .drop-zone:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .drop-zone.dragover {
+            border-color: var(--primary-color);
+            background: rgba(74, 144, 226, 0.05);
+        }
+
+        .upload-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+            fill: none;
+            stroke: #cbd5e0;
+            stroke-width: 1.5;
+            transition: stroke 0.3s ease;
+        }
+
+        .drop-zone:hover .upload-icon {
+            stroke: var(--primary-color);
+        }
+
+        .drop-text {
+            color: #718096;
+            margin: 0.5rem 0;
+            font-size: 1.1rem;
+        }
+
+        .drop-subtext {
+            color: #a0aec0;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        #fileInput {
+            display: none;
+            /* Hide the file input */
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 8px;
+            background: var(--primary-color);
+            border-radius: 4px;
+            margin-top: 1.5rem;
+            transition: width 0.3s ease;
+        }
+
+        .upload-status {
+            margin-top: 1rem;
+            font-weight: 500;
+            color: #718096;
+            min-height: 24px;
+        }
+
+        .success-check {
+            width: 48px;
+            height: 48px;
+            margin: 1rem auto;
+            stroke: var(--success-color);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        .bounding-box {
+            position: absolute;
+            inset: -8px;
+            border: 2px solid var(--primary-color);
+            border-radius: 1.75rem;
+            opacity: 0;
+            animation: bounding 1.5s ease-out infinite;
+        }
+
+        @keyframes bounding {
+            0% {
+                opacity: 0;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(1.1);
+            }
+        }
+
+        @keyframes check-animation {
+            from {
+                stroke-dashoffset: 48;
+            }
+
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .check-path {
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: check-animation 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+
 <body>
-    <form ref='uploadForm' id='uploadForm' action='http://localhost:3000/upload' method='post'
-        encType="multipart/form-data">
-        <input type="file" name="sampleFile" />
-        <input type='submit' value='Upload!' />
-    </form>
+    <div class="upload-container">
+        <div class="drop-zone" id="dropZone">
+            <div class="bounding-box"></div>
+            <svg class="upload-icon" viewBox="0 0 24 24">
+                <path
+                    d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+            </svg>
+            <p class="drop-text">Drag and drop your GLB file here</p>
+            <p class="drop-subtext">or click to browse for 3D models</p>
+            <div class="progress-bar"></div>
+            <div class="upload-status" id="uploadStatus"></div>
+            <form id="uploadForm">
+                <input type="file" name="sampleFile" id="fileInput" accept=".glb" />
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const uploadStatus = document.getElementById('uploadStatus');
+        const progressBar = document.querySelector('.progress-bar');
+
+        // Drag and drop handlers
+        ['dragenter', 'dragover'].forEach(event => {
+            dropZone.addEventListener(event, (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(event => {
+            dropZone.addEventListener(event, (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+            });
+        });
+
+        // Handle file drop
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFiles(files);
+            }
+        });
+
+        // Handle click to open file dialog
+        dropZone.addEventListener('click', () => {
+            fileInput.click(); // Trigger the file input
+        });
+
+        // Handle file selection
+        fileInput.addEventListener('change', (e) => {
+            const files = e.target.files;
+            if (files.length > 0) {
+                handleFiles(files);
+            }
+        });
+
+        // Handle files (drag or click)
+        function handleFiles(files) {
+            const file = files[0];
+            if (file) {
+                uploadFile(file);
+            }
+        }
+
+        // Upload file
+        function uploadFile(file) {
+            // Reset UI
+            progressBar.style.width = '0%';
+            uploadStatus.textContent = 'Uploading...';
+            dropZone.classList.remove('success', 'error');
+
+            // Mock upload progress (replace with real progress events)
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                progressBar.style.width = `${Math.min(progress, 100)}%`;
+                if (progress >= 100) clearInterval(progressInterval);
+            }, 200);
+
+            // Create FormData and send request
+            const formData = new FormData();
+            formData.append('sampleFile', file);
+
+            fetch('http://localhost:3000/upload', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    clearInterval(progressInterval);
+                    progressBar.style.width = '100%';
+
+                    if (!response.ok) throw new Error('Upload failed');
+                    showSuccessUI();
+                    return response.text();
+                })
+                .catch(error => {
+                    clearInterval(progressInterval);
+                    showErrorUI(error.message);
+                });
+        }
+
+        // Show success UI
+        function showSuccessUI() {
+            uploadStatus.innerHTML = `
+        <svg class="success-check" viewBox="0 0 24 24">
+          <path class="check-path" d="M5 13l4 4L19 7"/>
+        </svg>
+        GLB file uploaded successfully!
+      `;
+            dropZone.classList.add('success');
+        }
+
+        // Show error UI
+        function showErrorUI(message) {
+            uploadStatus.textContent = `Error: ${message}`;
+            uploadStatus.style.color = 'var(--error-color)';
+            dropZone.classList.add('error');
+        }
+    </script>
 </body>
 
 </html>

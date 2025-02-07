@@ -1,4 +1,4 @@
-import { AbstractMesh, BoundingBoxGizmo, Color3, Engine, FreeCamera, GizmoManager, HemisphericLight, Mesh, MultiPointerScaleBehavior, PointerDragBehavior, PointerEventTypes, RotationGizmo, ScaleGizmo, Scene, SceneLoader, SixDofDragBehavior, UniversalCamera, UtilityLayerRenderer, Vector2, Vector3 } from '@babylonjs/core'
+import { AbstractMesh, Axis, BoundingBoxGizmo, Color3, Engine, FreeCamera, GizmoManager, HemisphericLight, Mesh, MultiPointerScaleBehavior, PointerDragBehavior, PointerEventTypes, RotationGizmo, ScaleGizmo, Scene, SceneLoader, SixDofDragBehavior, Space, UniversalCamera, UtilityLayerRenderer, Vector2, Vector3, WebXRFeatureName, WebXRImageTracking } from '@babylonjs/core'
 import { AdvancedDynamicTexture, Control, Rectangle, TextBlock } from '@babylonjs/gui';
 import "@babylonjs/loaders/glTF";
 import { GUIElement } from './GUIElement';
@@ -28,6 +28,7 @@ export const createSceneAsync = async (engine: Engine, canvas: HTMLCanvasElement
         modelFile += ".glb";
     }
 
+    let boundingBoxGizmo: BoundingBoxGizmo;
 
     try {
         const result = await SceneLoader.ImportMeshAsync("", "./models/", modelFile, scene);
@@ -41,13 +42,17 @@ export const createSceneAsync = async (engine: Engine, canvas: HTMLCanvasElement
         rootMesh.id = modelFile;
         rootMesh.name = modelFile;
 
+        console.log(rootMesh)
+
         const utilLayer = new UtilityLayerRenderer(scene);
 
         utilLayer.utilityLayerScene.autoClearDepthAndStencil = true;
 
         // let boundingBox = BoundingBoxGizmo.MakeNotPickableAndWrapInBoundingBox(rootMesh as Mesh);
+        
 
-        const boundingBoxGizmo = new BoundingBoxGizmo(Color3.FromHexString("#0984e3"), utilLayer);
+
+        boundingBoxGizmo = new BoundingBoxGizmo(Color3.FromHexString("#0984e3"), utilLayer);
         // const rotateGizmo = new RotationGizmo(utilLayer);
         boundingBoxGizmo.attachedMesh = rootMesh;
         boundingBoxGizmo.setEnabledScaling(true, true);
@@ -59,6 +64,7 @@ export const createSceneAsync = async (engine: Engine, canvas: HTMLCanvasElement
         
         boundingBoxGizmo.updateGizmoRotationToMatchAttachedMesh = true;
         boundingBoxGizmo.updateGizmoPositionToMatchAttachedMesh = true;
+
         
         let sixDofDragBehavior = new SixDofDragBehavior()
         rootMesh.addBehavior(sixDofDragBehavior)
@@ -71,7 +77,7 @@ export const createSceneAsync = async (engine: Engine, canvas: HTMLCanvasElement
         const guiElements = [];
         let idx = 0;
         for (let POI_mesh of POI_meshes) {
-            let guiElement = new GUIElement(scene, POI_mesh, POI_mesh.name, idx);
+            let guiElement = new GUIElement(scene, rootMesh, POI_mesh, POI_mesh.name, idx);
             let placeOpacityBehav = new PlaceOpacityBehavior(scene);
             guiElement.addBehavior(placeOpacityBehav);
             guiElements.push(guiElement);
@@ -88,7 +94,29 @@ export const createSceneAsync = async (engine: Engine, canvas: HTMLCanvasElement
             sessionMode: 'immersive-ar'
         }
     });
-    console.log(xrExperience);
+
+    const featuresManager = xrExperience.baseExperience.featuresManager;
+    const imageTracking = featuresManager.enableFeature(WebXRFeatureName.IMAGE_TRACKING, "latest", {
+        images: [
+            {
+                src: "https://cdn.babylonjs.com/imageTracking.png",
+                estimatedRealWorldWidth: 0.2
+            },
+        ]
+    }) as WebXRImageTracking;
+
+    
+
+    imageTracking.onTrackedImageUpdatedObservable.add((image) => {
+        // root.setPreTransformMatrix(image.transformationMatrix);
+        const rootMesh: AbstractMesh = scene!.getMeshByName("suzanne.glb") as AbstractMesh;
+        image.transformationMatrix.decompose(rootMesh!.scaling, rootMesh.rotationQuaternion, rootMesh!.position);
+        rootMesh!.setEnabled(true);
+        rootMesh!.translate(Axis.Y, 0.1, Space.LOCAL);
+        rootMesh!.scaling = new Vector3(0.05, 0.05, 0.05);
+        boundingBoxGizmo.attachedMesh = null;
+    });
+
 
 
     return scene;

@@ -51,7 +51,7 @@ export class PlaceOpacityBehavior implements Behavior<GUIElement> {
     private checkIfRectangleAbovePOI(): void {
         if (!this.guiElement?.questRect || !this.guiElement.POI_mesh) return;
 
-        const adm = this.guiElement.advancedTexture;
+        const adm = this.guiElement.advancedTextureHint;
         const control = adm.getControlByName("questRect");
         if (control) {
             // Get the world position of the rectangle (GUI element)

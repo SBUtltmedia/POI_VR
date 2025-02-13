@@ -52,18 +52,18 @@ export const createSceneAsync = async (engine: Engine, canvas: HTMLCanvasElement
         
 
 
-        boundingBoxGizmo = new BoundingBoxGizmo(Color3.FromHexString("#0984e3"), utilLayer);
-        // const rotateGizmo = new RotationGizmo(utilLayer);
-        boundingBoxGizmo.attachedMesh = rootMesh;
-        boundingBoxGizmo.setEnabledScaling(true, true);
-        // rotateGizmo.attachedMesh = rootMesh;
+        // boundingBoxGizmo = new BoundingBoxGizmo(Color3.FromHexString("#0984e3"), utilLayer);
+        // // const rotateGizmo = new RotationGizmo(utilLayer);
+        // boundingBoxGizmo.attachedMesh = rootMesh;
+        // boundingBoxGizmo.setEnabledScaling(true, true);
+        // // rotateGizmo.attachedMesh = rootMesh;
 
-        let hoverObserver = boundingBoxGizmo.onHoverStartObservable.add((evt) => {
-            console.log(evt);
-        })
+        // let hoverObserver = boundingBoxGizmo.onHoverStartObservable.add((evt) => {
+        //     console.log(evt);
+        // })
         
-        boundingBoxGizmo.updateGizmoRotationToMatchAttachedMesh = true;
-        boundingBoxGizmo.updateGizmoPositionToMatchAttachedMesh = true;
+        // boundingBoxGizmo.updateGizmoRotationToMatchAttachedMesh = true;
+        // boundingBoxGizmo.updateGizmoPositionToMatchAttachedMesh = true;
 
         
         let sixDofDragBehavior = new SixDofDragBehavior()
@@ -105,18 +105,20 @@ export const createSceneAsync = async (engine: Engine, canvas: HTMLCanvasElement
         ]
     }) as WebXRImageTracking;
 
-    
-
     imageTracking.onTrackedImageUpdatedObservable.add((image) => {
         // root.setPreTransformMatrix(image.transformationMatrix);
         const rootMesh: AbstractMesh = scene!.getMeshByName("suzanne.glb") as AbstractMesh;
+        rootMesh.isVisible = true;
         image.transformationMatrix.decompose(rootMesh!.scaling, rootMesh.rotationQuaternion, rootMesh!.position);
         rootMesh!.setEnabled(true);
         rootMesh!.translate(Axis.Y, 0.1, Space.LOCAL);
-        rootMesh!.scaling = new Vector3(0.05, 0.05, 0.05);
-        boundingBoxGizmo.attachedMesh = null;
+        rootMesh!.scaling = new Vector3(0.15, 0.15, 0.15);
     });
 
+    imageTracking.onUntrackableImageFoundObservable.add((image) => {
+        const rootMesh: AbstractMesh = scene!.getMeshByName("suzanne.glb") as AbstractMesh;
+        rootMesh.isVisible = false;
+    })
 
 
     return scene;
